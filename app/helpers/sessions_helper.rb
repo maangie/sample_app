@@ -1,3 +1,4 @@
+# セッション用ヘルパ
 module SessionsHelper
   def sign_in(user)
     remember_token = User.new_remember_token
@@ -10,9 +11,7 @@ module SessionsHelper
     !current_user.nil?
   end
 
-  def current_user=(user)
-    @current_user = user
-  end
+  attr_writer :current_user
 
   def current_user
     remember_token = User.encrypt(cookies[:remember_token])
@@ -21,6 +20,13 @@ module SessionsHelper
 
   def current_user?(user)
     user == current_user
+  end
+
+  def signed_in_user
+    return if signed_in?
+
+    store_location
+    redirect_to signin_url, notice: 'Please sign in.'
   end
 
   def sign_out

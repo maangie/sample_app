@@ -2,7 +2,7 @@ require 'rails_helper'
 require 'support/utilities'
 
 RSpec.describe 'Static Pages', type: :request do
- subject { page }
+  subject { page }
 
   describe 'Home page' do
     before { visit root_path }
@@ -10,6 +10,22 @@ RSpec.describe 'Static Pages', type: :request do
     it { is_expected.to have_content 'Sample App' }
     it { is_expected.to have_title spec_full_title('') }
     it { is_expected.not_to have_title '| Home' }
+
+    describe 'for signed-in users' do
+      let(:user) { FactoryGirl.create(:user) }
+      before do
+        FactoryGirl.create(:micropost, user: user, content: 'Lorem ipsum')
+        FactoryGirl.create(:micropost, user: user, content: 'Dolor sit amet')
+        sign_in user
+        visit root_path
+      end
+
+      it "should render the user's feed" do
+        user.feed.each do |item|
+          expect(page).to have_selector("li##{item.id}", text: item.content)
+        end
+      end
+    end
   end
 
   describe 'Help page' do
